@@ -1,15 +1,17 @@
 # MAIN FILE
 
-from pytube import YouTube
+from pytube import Search
 from datetime import datetime
 import os
 
 
-def download_video(url):
+def download_video(search):
 
     start = datetime.now()
 
-    yt = YouTube(url)
+    s = Search(search)
+
+    yt = s.results[0]
     yt = yt.streams.get_highest_resolution()
 
     try:
@@ -24,4 +26,6 @@ def download_video(url):
 
     return (datetime.now() - start).seconds
 
-print(download_video("https://www.youtube.com/watch?v=JIPQbgPk4oA"))
+             
+
+print(download_video("Organic Chemistry tutor electricity"))
