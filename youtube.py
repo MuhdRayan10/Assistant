@@ -2,6 +2,9 @@
 from pytube import Search
 from datetime import datetime
 from tkinter import *
+from io import BytesIO
+from PIL import Image, ImageTk
+import requests
 import os
 
 
@@ -45,13 +48,43 @@ class GUI(Tk):
         search_button = Button(self, bg="brown", text="Search", command=lambda: self.search(search_box.get()))
         search_button.pack(pady=10)
 
-        results = Frame(self, bg="red")
-        results.pack(expand=True)
+        self.results = Frame(self, bg="red")
+        self.results.pack(expand=True)
 
     def search(self, query):
         s = Search(query)
-        for result in s.results:
-            print(result.thumbnail_url)
+
+        self.results.destroy()
+        self.results = Frame(self, bg="#3c3c3c")
+        self.results.pack(expand=True, fill='both')
+
+        search = Label(self.results, text="Results", fg="#f5f5f5", bg="#3c3c3c")
+        search.pack()
+
+        for result in s.results[:10]:
+            response = requests.get(result.thumbnail_url)
+
+
+            img = ImageTk.PhotoImage(Image.open(BytesIO(response.content)).resize((128, 72), Image.ANTIALIAS))
+
+            frame = Frame(self.results, bg="#3c3c3c")
+            frame.pack(anchor='w')
+
+            btn = Button(frame, image=img, command=lambda x=result:self.selected(x), borderwidth=0)
+            btn.image = img
+            btn.grid(row=0, column=0, rowspan=2)
+            
+            title = Label(frame, text=result.title, fg="#f5f5f5", bg="#3c3c3c")
+            title.grid(row=0, column=1)
+
+            author = Label(frame, text=result.author, fg="#C1839F", bg="#3c3c3c")
+            author.grid(row=1, column=1)
+
+    def selected(self, search):
+        pass      
+        
+
+            
 
 
 
