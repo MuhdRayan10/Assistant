@@ -28,12 +28,12 @@ def download_video(yt):
     del yt, files
     return (datetime.now() - start).seconds
 
-class GUI(Tk):
+class YouTubeGUI(Tk):
     def __init__(self):
         super().__init__()
         
         self.title("YouTube downloader")
-        self.geometry("500x400")
+        self.geometry("600x450")
 
         self.config(bg="white")
 
@@ -42,28 +42,28 @@ class GUI(Tk):
         self.mainloop()
 
     def add_widgets(self):
-        search_box = Entry(self, width=30, borderwidth=4)
+        search_box = Entry(self, width=30, borderwidth=4, justify='center')
         search_box.pack(pady=5)
 
         search_button = Button(self, bg="brown", text="Search", command=lambda: self.search(search_box.get()))
         search_button.pack(pady=10)
-
-        self.results = Frame(self, bg="red")
+        
+        self.results = Frame(self, bg="#3c3c3c")
         self.results.pack(expand=True)
+
 
     def search(self, query):
         s = Search(query)
 
-        self.results.destroy()
-        self.results = Frame(self, bg="#3c3c3c")
-        self.results.pack(expand=True, fill='both')
+        for widget in self.results.winfo_children():
+            widget.destroy()
 
         search = Label(self.results, text="Results", fg="#f5f5f5", bg="#3c3c3c")
         search.pack()
 
-        for result in s.results[:10]:
-            response = requests.get(result.thumbnail_url)
 
+        for result in s.results[:4]:
+            response = requests.get(result.thumbnail_url)
 
             img = ImageTk.PhotoImage(Image.open(BytesIO(response.content)).resize((128, 72), Image.ANTIALIAS))
 
@@ -82,11 +82,5 @@ class GUI(Tk):
 
     def selected(self, search):
         pass      
-        
 
-            
-
-
-
-
-GUI()
+YouTubeGUI()
