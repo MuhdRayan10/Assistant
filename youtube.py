@@ -1,4 +1,5 @@
 
+from tkinter import messagebox
 from pytube import Search
 from datetime import datetime
 from tkinter import *
@@ -74,13 +75,19 @@ class YouTubeGUI(Tk):
             btn.image = img
             btn.grid(row=0, column=0, rowspan=2)
             
-            title = Label(frame, text=result.title, fg="#f5f5f5", bg="#3c3c3c")
-            title.grid(row=0, column=1)
+
+            title = Label(frame, text="   " + result.title, fg="#f5f5f5", bg="#3c3c3c", justify='center')
+            title.grid(row=0, column=1, sticky=NSEW)
 
             author = Label(frame, text=result.author, fg="#C1839F", bg="#3c3c3c")
             author.grid(row=1, column=1)
 
+        del s
+
     def selected(self, search):
-        pass      
+        messagebox.showinfo("Starting Download", f"{search.title} will be downloaded shortly.")
+        t = download_video(search)
+        messagebox.showinfo("Video Downloaded", f"{search.title} was downloaded in {t} seconds!")
+        
 
 YouTubeGUI()
