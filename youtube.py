@@ -23,7 +23,7 @@ def download_video(yt):
     files = os.listdir()
     for file in files:
         if file.endswith(".mp4"):
-            os.replace(file, f"./downloads/{file}")
+            os.replace(file, f"./data/downloads/{file}")
 
 
     del yt, files
@@ -43,8 +43,10 @@ class YouTubeGUI(Tk):
         self.mainloop()
 
     def add_widgets(self):
-        search_box = Entry(self, width=30, borderwidth=4, justify='center')
+        search_box = Entry(self, width=50, borderwidth=4, justify='center')
         search_box.pack(pady=5)
+
+        search_box.bind('<Return>', lambda x: self.search(search_box.get()))
 
         search_button = Button(self, bg="brown", text="Search", command=lambda: self.search(search_box.get()))
         search_button.pack(pady=10)
@@ -89,5 +91,4 @@ class YouTubeGUI(Tk):
         t = download_video(search)
         messagebox.showinfo("Video Downloaded", f"{search.title} was downloaded in {t} seconds!")
         
-
 YouTubeGUI()
