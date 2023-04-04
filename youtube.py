@@ -1,11 +1,13 @@
 
-from tkinter import messagebox
-from pytube import Search
+from tkinter import messagebox, ttk
+from youtubesearchpython import VideosSearch
+from yt_dlp import YoutubeDL
 from datetime import datetime
 from tkinter import *
 from io import BytesIO
 from PIL import Image, ImageTk
 import requests
+import threading
 import os
 
 
@@ -13,13 +15,11 @@ def download_video(yt):
 
     start = datetime.now()
 
-    yt = yt.streams.get_highest_resolution()
-
-    try:
-        yt.download()
-    except:
-        return False
+    yt = f'https://www.youtube.com/watch?v={yt}'
     
+    with YoutubeDL() as ydl:
+        ydl.download([yt])
+
     files = os.listdir()
     for file in files:
         if file.endswith(".mp4"):
@@ -43,20 +43,26 @@ class YouTubeGUI(Tk):
         self.mainloop()
 
     def add_widgets(self):
-        search_box = Entry(self, width=50, borderwidth=4, justify='center')
-        search_box.pack(pady=5)
+        self.search_box = ttk.Entry(self, width=50, justify='center')
+        self.search_box.pack(pady=20)
 
-        search_box.bind('<Return>', lambda x: self.search(search_box.get()))
+        self.search_box.bind('<Return>', lambda _: self.search())
 
-        search_button = Button(self, bg="brown", text="Search", command=lambda: self.search(search_box.get()))
-        search_button.pack(pady=10)
         
+        search_button = ttk.Button(self, text="Search", command=lambda:threading.Thread(target=self.search).start)
+        search_button.pack()
+        
+        separator = ttk.Separator(self)
+        separator.pack(pady=10, fill='x', expand=True)
+
         self.results = Frame(self, bg="#3c3c3c")
         self.results.pack(expand=True)
 
 
-    def search(self, query):
-        s = Search(query)
+    def search(self):
+        query = self.search_box.get()
+        
+        s = VideosSearch(query, limit=4).result()
 
         for widget in self.results.winfo_children():
             widget.destroy()
@@ -65,30 +71,38 @@ class YouTubeGUI(Tk):
         search.pack()
 
 
-        for result in s.results[:4]:
-            response = requests.get(result.thumbnail_url)
+        for result in s["result"]:
+
+            response = requests.get(result['thumbnails'][0]['url'])
 
             img = ImageTk.PhotoImage(Image.open(BytesIO(response.content)).resize((128, 72), Image.ANTIALIAS))
 
             frame = Frame(self.results, bg="#3c3c3c")
             frame.pack(anchor='w')
 
-            btn = Button(frame, image=img, command=lambda x=result:self.selected(x), borderwidth=0)
+            thread = threading.Thread(target=self.selected, args=(result['id'],))
+
+            btn = Button(frame, image=img, command=thread.start, borderwidth=0)
             btn.image = img
             btn.grid(row=0, column=0, rowspan=2)
             
 
-            title = Label(frame, text="   " + result.title, fg="#f5f5f5", bg="#3c3c3c", justify='center')
+            title = Label(frame, text="   " + result["title"], fg="#f5f5f5", bg="#3c3c3c", justify='center')
             title.grid(row=0, column=1, sticky=NSEW)
 
-            author = Label(frame, text=result.author, fg="#C1839F", bg="#3c3c3c")
+            author = Label(frame, text=result["channel"]["name"], fg="#C1839F", bg="#3c3c3c")
             author.grid(row=1, column=1)
 
         del s
 
     def selected(self, search):
-        messagebox.showinfo("Starting Download", f"{search.title} will be downloaded shortly.")
-        t = download_video(search)
-        messagebox.showinfo("Video Downloaded", f"{search.title} was downloaded in {t} seconds!")
+
+        messagebox.showinfo("Starting Download", "The video will be downloaded shortly.")
         
+        t = download_video(search)
+
+        messagebox.showinfo("Download successful", f"The video has been downloaded in {t} seconds.")
+        del t
+
+
 YouTubeGUI()
