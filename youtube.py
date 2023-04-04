@@ -11,19 +11,32 @@ import threading
 import os
 
 
-def download_video(yt):
+def download_video(vid):
 
     start = datetime.now()
 
-    yt = f'https://www.youtube.com/watch?v={yt}'
+    yt = f'https://www.youtube.com/watch?v={vid}'
     
-    with YoutubeDL() as ydl:
-        ydl.download([yt])
+    error, i = True, 0
+    formats = ['13'+ str(i) for i in range(7,2,-1)]
+
+    while error:
+
+        try:
+            with YoutubeDL({'format':formats[i]}) as ydl:
+                ydl.download([yt])
+            break
+
+        except:
+            i += 1
+            error = True
+
+            if i > 5: break  
 
     files = os.listdir()
     for file in files:
         if file.endswith(".mp4"):
-            os.replace(file, f"./data/downloads/{file}")
+            os.replace(file, f"./data/downloads/{file.replace(f'[{vid}]', '')}")
 
 
     del yt, files
@@ -49,7 +62,7 @@ class YouTubeGUI(Tk):
         self.search_box.bind('<Return>', lambda _: self.search())
 
         
-        search_button = ttk.Button(self, text="Search", command=lambda:threading.Thread(target=self.search).start)
+        search_button = ttk.Button(self, text="Search", command=self.search)
         search_button.pack()
         
         separator = ttk.Separator(self)
@@ -61,7 +74,7 @@ class YouTubeGUI(Tk):
 
     def search(self):
         query = self.search_box.get()
-        
+
         s = VideosSearch(query, limit=4).result()
 
         for widget in self.results.winfo_children():
