@@ -10,21 +10,18 @@ import requests
 import threading
 import os
 
+FORMATS = ['13'+ str(i) for i in range(7,2,-1)]
 
 def download_video(vid):
 
     start = datetime.now()
-
-    yt = f'https://www.youtube.com/watch?v={vid}'
-    
     error, i = True, 0
-    formats = ['13'+ str(i) for i in range(7,2,-1)]
-
+    
     while error:
 
         try:
-            with YoutubeDL({'format':formats[i]}) as ydl:
-                ydl.download([yt])
+            with YoutubeDL({'format':FORMATS[i]}) as ydl:
+                ydl.download(['https://www.youtube.com/watch?v='+vid])
             break
 
         except:
@@ -36,7 +33,7 @@ def download_video(vid):
     files = os.listdir()
     for file in files:
         if file.endswith(".mp4"):
-            os.replace(file, f"./data/downloads/{file.replace(f'[{vid}]', '')}")
+            os.replace(file, f"./data/downloads/{file.replace(f' [{vid}]', '')}")
 
 
     del yt, files
@@ -116,6 +113,5 @@ class YouTubeGUI(Tk):
 
         messagebox.showinfo("Download successful", f"The video has been downloaded in {t} seconds.")
         del t
-
 
 YouTubeGUI()

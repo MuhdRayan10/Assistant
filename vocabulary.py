@@ -83,4 +83,12 @@ class VocabGUI(Tk):
 
         self.word_list.append((word, meaning))
 
+class TestGUI(Toplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.geometry("300x300")
+        self.title("Test")
+
+
 VocabGUI()
