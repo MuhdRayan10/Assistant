@@ -67,8 +67,11 @@ class VocabGUI(Tk):
 
 
     def add_word(self, word, entry:ttk.Entry):
-        word, meaning = [w.strip() for w in word.split('=')]
-        
+        try:
+            word, meaning = [w.strip() for w in word.split(' - ')]
+        except:
+            word, meaning = [w.strip() for w in word.split(' = ')]
+
         db = Database("./data/apps/vocabulary/vocab.db")
 
         if db.if_exists("vocab", {"word": word}):
