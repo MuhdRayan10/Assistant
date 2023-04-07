@@ -1,4 +1,5 @@
 from pynput import keyboard
+from tkinter import messagebox
 import json
 
 COMBINATIONS = [{keyboard.Key.shift_r, keyboard.Key.f12}]
@@ -14,6 +15,8 @@ def change_perms():
     config["lock"] = not config["lock"]
     with open(FILE_PATH, mode='w') as f:
         json.dump(config, f, indent=4)
+
+    return config["lock"]
         
 
 def on_press(key):
@@ -21,7 +24,10 @@ def on_press(key):
         current.add(key)
 
         if any(all(k in current for k in combo) for combo in COMBINATIONS):
-            change_perms()
+            change = change_perms()
+            print(change)
+            messagebox.showinfo("Changed Lock", f"Mode set to {'un' if change else ''}locked!")
+
 
 def on_release(key):
     if any([key in combo for combo in COMBINATIONS]):
