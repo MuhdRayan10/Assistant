@@ -22,9 +22,56 @@ class DashboardGUI(Tk):
 
     def setup_dashboard(self):
 
-        title = Label(self, text=f"Name: {self.data[2]}{self.name}\nRating: {self.data[1]}",
+        self.t = Label(self, text=f"Name: {self.data[2]}{self.name}\nRating: {self.data[1]}",
                       fg="darkgrey", font=("Times", 20))
-        title.pack(pady=10)
+        self.t.pack(pady=10)
+
+        match_btn = Button(self, text=f"Match", bg="brown", font=("Times", 15), command=self.add_match)
+        match_btn.pack(pady=10)
+
+    def add_match(self):
+        scr = Toplevel(self)
+        scr.title("Add Match")
+        scr.geometry("200x200")
+
+        opponent = StringVar(scr)
+
+        drop_down = ttk.Combobox(scr, textvariable=opponent)
+        drop_down.pack(pady=10)
+
+        db = Database("./data/apps/chess/chess.db")
+        drop_down["values"] = [r[0] for r in db.select("ratings")]
+
+        db.close()
+
+        winner = StringVar(scr)
+
+        winner_drop = ttk.Combobox(scr, textvariable=winner)
+        winner_drop.pack(pady=10)
+
+        winner_drop["values"] = ["You", "Opponent"]
+
+        add = Button(scr, text="Add Match", bg="brown", font=("Times", 15), command=lambda:self.conduct_match(opponent.get(), winner.get()))
+        add.pack(pady=10)
+
+    def conduct_match(self, opponent, winner):
+        db = Database("./data/apps/chess/chess.db")
+        ratings = db.select("ratings")
+
+        opponent_rating = [r[1] for r in ratings if r[0] == opponent][0]
+        user_rating = [r[1] for r in ratings if r[0] == self.name][0]
+
+        expected = 1 / (1 + 10 ** ((opponent_rating - user_rating)/400))
+        score = 1 if winner == "You" else 0
+
+        db.update("ratings", information={"rating": round(user_rating + 32 * (score - expected), 2)}, where={"player":self.name})
+        db.update("ratings", information={"rating": round(opponent_rating + 32 * ((not score) + expected - 1), 2)}, where={"player": opponent})
+
+        db.close()
+
+        self.t.config(text=f"Name: {self.name}\nRating: {round(user_rating + 32 * (score - expected), 2)}")
+
+
 
 
 
