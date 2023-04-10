@@ -1,6 +1,22 @@
 from tkinter import ttk
 from tkinter import *
 from easy_sqlite3 import *
+import random
+
+def get_pairings():
+    candidates = ["Rayan", "Zaman", "Yazan", "Howser", "Emir", "Sven", "Nelson", "Antonio", "Fabigi", "Lario"]
+    pairings = []
+    for candidate in candidates:
+        for c in candidates:
+            pairings.append(f"{candidate} vs {c}")
+
+    random.shuffle(pairings)
+
+    return pairings
+
+def sim(r1, r2):
+    expected = 1 / (1 + 10 ** ((r2 - r1)/400))
+    return random.choices(['1', '2'], weights=[expected, 1-expected], k=1)[0]
 
 class DashboardGUI(Tk):
     def __init__(self, menu, name):
@@ -70,9 +86,6 @@ class DashboardGUI(Tk):
         db.close()
 
         self.t.config(text=f"Name: {self.name}\nRating: {round(user_rating + 32 * (score - expected), 2)}")
-
-
-
 
 
 class ChessMenu(Tk):
@@ -151,4 +164,13 @@ class ChessMenu(Tk):
         
         DashboardGUI(self, name)
 
-ChessMenu()
+mode = True
+
+if mode:
+    ChessMenu()
+else:
+    while True:
+        ratings = [int(i) for i in input("Give ratings: ").split()]
+        print(sim(*ratings))
+
+
